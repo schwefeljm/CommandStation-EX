@@ -112,6 +112,9 @@ void  Output::activate(uint16_t s){
   // Update EEPROM if output has been stored.    
   if(EEStore::eeStore->data.nOutputs > 0 && num > 0)
     EEPROM.put(num, data.oStatus);
+#ifdef ARDUINO_ARCH_ESP32
+    EEPROM.commit();
+#endif
 #endif
 }
 
@@ -176,6 +179,9 @@ void Output::store(){
 
   while(tt!=NULL){
     EEPROM.put(EEStore::pointer(),tt->data);
+#ifdef ARDUINO_ARCH_ESP32
+    EEPROM.commit();
+#endif
     tt->num=EEStore::pointer() + offsetof(OutputData, oStatus); // Save pointer to flags within EEPROM
     EEStore::advance(sizeof(tt->data));
     tt=tt->nextOutput;

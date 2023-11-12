@@ -175,10 +175,23 @@ The configuration file for DCC-EX Command Station
 // and want to use the EXRAIL automation. Otherwise you do not have enough RAM
 // to do that. Of course, then none of the EEPROM related commands work.
 //
-// EEPROM does not work on ESP32. So on ESP32, EEPROM will always be disabled,
-// at least until it works.
-//
 // #define DISABLE_EEPROM
+
+/////////////////////////////////////////////////////////////////////////////////////
+// EEPROM SIZE
+//
+// Using an ESP32 with the default partitioning scheme will allow for 5k (5120 bytes)
+// of configuration storage. This exceedes the Arduino Mega (4096 bytes) by 25% and 
+// Arduino Uno (1024 bytes) by a 5X.
+//
+// Is this is not enough, you can increase the amount of EEPROM storage up to 64k, 
+// 16x an Arduino Mega. 
+//
+// WARNING: This will require creating a custom_partitions.csv file. (Example below)
+//
+//
+// Standard 5k of EEPROM
+// #define ESP32_EEPROM_SIZE 0x1000
 
 /////////////////////////////////////////////////////////////////////////////////////
 // DISABLE PROG

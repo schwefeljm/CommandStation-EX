@@ -143,6 +143,9 @@
       // is always zero for LCN turnouts.
       if (EEStore::eeStore->data.nTurnouts > 0 && tt->_eepromAddress > 0) 
         EEPROM.put(tt->_eepromAddress, tt->_turnoutData.flags);
+#ifdef ARDUINO_ARCH_ESP32
+      EEPROM.commit();
+#endif        
 #endif
     }
     return ok;
@@ -305,6 +308,9 @@
     EEStore::advance(sizeof(_turnoutData));
     EEPROM.put(EEStore::pointer(), _servoTurnoutData);
     EEStore::advance(sizeof(_servoTurnoutData));
+#ifdef ARDUINO_ARCH_ESP32
+    EEPROM.commit();
+#endif
 #endif
   }
 
@@ -399,6 +405,9 @@
     EEStore::advance(sizeof(_turnoutData));
     EEPROM.put(EEStore::pointer(), _dccTurnoutData);
     EEStore::advance(sizeof(_dccTurnoutData));
+#ifdef ARDUINO_ARCH_ESP32
+    EEPROM.commit();
+#endif    
 #endif
   }
 
@@ -474,6 +483,9 @@
     EEStore::advance(sizeof(_turnoutData));
     EEPROM.put(EEStore::pointer(), _vpinTurnoutData);
     EEStore::advance(sizeof(_vpinTurnoutData));
+#ifdef ARDUINO_ARCH_ESP32
+    EEPROM.commit();
+#endif
 #endif
   }
 

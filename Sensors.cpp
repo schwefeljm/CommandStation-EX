@@ -301,6 +301,9 @@ void Sensor::store(){
 
   while(tt!=NULL){
     EEPROM.put(EEStore::pointer(),tt->data);
+#ifdef ARDUINO_ARCH_ESP32
+    EEPROM.commit();
+#endif
     EEStore::advance(sizeof(tt->data));
     tt=tt->nextSensor;
     EEStore::eeStore->data.nSensors++;

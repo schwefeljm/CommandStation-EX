@@ -40,6 +40,12 @@ void EEStore::init() {
   EEPROM.begin(0x50);  // Address for Microchip 24-series EEPROM with all three
                        // A pins grounded (0b1010000 = 0x50)
 #endif
+#ifdef ARDUINO_ARCH_ESP32
+#ifndef ESP32_EEPROM_SIZE
+#define ESP32_EEPROM_SIZE 0x1400
+#endif
+  EEPROM.begin(ESP32_EEPROM_SIZE);
+#endif
 
   eeStore = (EEStore *)calloc(1, sizeof(EEStore));
 
@@ -54,8 +60,13 @@ void EEStore::init() {
     eeStore->data.nSensors = 0;
     eeStore->data.nOutputs = 0;
     EEPROM.put(0, eeStore->data);
+#ifdef ARDUINO_ARCH_ESP32
+    EEPROM.commit();
+#endif
+    
   }
 
+  DIAG(F("EEPROM used: %d/%d bytes"), EEStore::pointer(), EEPROM.length());
   reset();          // set memory pointer to first free EEPROM space
   Turnout::load();  // load turnout definitions
   Sensor::load();   // load sensor definitions
@@ -72,6 +83,10 @@ void EEStore::clear() {
   eeStore->data.nSensors = 0;
   eeStore->data.nOutputs = 0;
   EEPROM.put(0, eeStore->data);
+#ifdef ARDUINO_ARCH_ESP32
+  EEPROM.commit();
+#endif
+DIAG(F("EEPROM used: %d/%d bytes"), EEStore::pointer(), EEPROM.length());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,6 +97,9 @@ void EEStore::store() {
   Sensor::store();
   Output::store();
   EEPROM.put(0, eeStore->data);
+#ifdef ARDUINO_ARCH_ESP32
+  EEPROM.commit();
+#endif
   DIAG(F("EEPROM used: %d/%d bytes"), EEStore::pointer(), EEPROM.length());
 }
 
