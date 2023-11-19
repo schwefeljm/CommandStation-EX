@@ -83,16 +83,29 @@
 // analog inputs. Here we use analog inputs A2 and A3 as A0 and A1 are wired in a way so that
 // they are not useable at the same time as WiFi (what a bummer). The numbers below are the
 // actual GPIO numbers. In comments the numbers the pins have on an Uno.
+
+#if ARDUINO_ESP32S3_DEV
+#define STANDARD_MOTOR_SHIELD F("STANDARD_MOTOR_SHIELD"), \
+ new MotorDriver(4/* 3*/, 10/*12*/, UNUSED_PIN, 11/*9*/, 1/*A2*/, 0.70, 1500, UNUSED_PIN), \
+ new MotorDriver(5/*11*/, 12/*13*/, UNUSED_PIN, 13/*8*/, 2/*A3*/, 0.70, 1500, UNUSED_PIN)
+#else
 #define STANDARD_MOTOR_SHIELD F("STANDARD_MOTOR_SHIELD"), \
  new MotorDriver(25/* 3*/, 19/*12*/, UNUSED_PIN, 13/*9*/, 35/*A2*/, 0.70, 1500, UNUSED_PIN), \
  new MotorDriver(23/*11*/, 18/*13*/, UNUSED_PIN, 12/*8*/, 34/*A3*/, 0.70, 1500, UNUSED_PIN)
+#endif
+
 
 // EX 8874 based shield connected to a 3.3V system (like ESP32) and 12bit (4096) ADC
 // numbers are GPIO numbers. comments are UNO form factor shield pin numbers
+#if ARDUINO_ESP32S3_DEV
+#define EX8874_SHIELD F("EX8874"),\
+ new MotorDriver(4/* 3*/, 10/*12*/, UNUSED_PIN, 11/*9*/, 1/*A2*/, 1.27, 5000, 6 /*A4*/), \
+ new MotorDriver(5/*11*/, 12/*13*/, UNUSED_PIN, 13/*8*/, 2/*A3*/, 1.27, 5000, 7 /*A5*/)
+#else
 #define EX8874_SHIELD F("EX8874"),\
  new MotorDriver(25/* 3*/, 19/*12*/, UNUSED_PIN, 13/*9*/, 35/*A2*/, 1.27, 5000, 36 /*A4*/), \
  new MotorDriver(23/*11*/, 18/*13*/, UNUSED_PIN, 12/*8*/, 34/*A3*/, 1.27, 5000, 39 /*A5*/)
-
+#endif
 #else
 // STANDARD shield on any Arduino Uno or Mega compatible with the original specification.
 #define STANDARD_MOTOR_SHIELD F("STANDARD_MOTOR_SHIELD"),                                                 \

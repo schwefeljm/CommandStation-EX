@@ -73,13 +73,25 @@ void IRAM_ATTR interrupt(rmt_channel_t channel, void *t) {
 }
 
 RMTChannel::RMTChannel(pinpair pins, bool isMain) {
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH0: %x"), RMT_MEM_SIZE_CH0);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH1: %x"), RMT_MEM_SIZE_CH1);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH2: %x"), RMT_MEM_SIZE_CH2);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH3: %x"), RMT_MEM_SIZE_CH3);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH4: %x"), RMT_MEM_SIZE_CH4);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH5: %x"), RMT_MEM_SIZE_CH5);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH6: %x"), RMT_MEM_SIZE_CH6);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH7: %x"), RMT_MEM_SIZE_CH7);
   byte ch;
   byte plen;
   if (isMain) {
     ch = 0;
     plen = PREAMBLE_BITS_MAIN;
   } else {
+#if ARDUINO_ESP32S3_DEV
+    ch = 3;     // See config.mem_block_num below
+#elif
     ch = 2;
+#endif
     plen = PREAMBLE_BITS_PROG;
   }
     
@@ -123,10 +135,19 @@ RMTChannel::RMTChannel(pinpair pins, bool isMain) {
   config.channel = channel = (rmt_channel_t)ch;
   config.clk_div = RMT_CLOCK_DIVIDER;
   config.gpio_num = (gpio_num_t)pins.pin;
+#if ARDUINO_ESP32S3_DEV
+  config.mem_block_num = 3; // ESP32S3 uses 48 data blocks. 
+                            // With longest DCC packet 11 inc checksum (future expansion)
+                            // number of bits needed is 22preamble + start +
+                            // 11*9 + extrazero + EOT = 124
+                            // 3 mem block of 48 RMT (144 bytes) items should be enough
+#elif
   config.mem_block_num = 2; // With longest DCC packet 11 inc checksum (future expansion)
                             // number of bits needed is 22preamble + start +
                             // 11*9 + extrazero + EOT = 124
                             // 2 mem block of 64 RMT items should be enough
+#endif
+
 
   ESP_ERROR_CHECK(rmt_config(&config));
   addPin(pins.invpin, true);
@@ -147,7 +168,18 @@ RMTChannel::RMTChannel(pinpair pins, bool isMain) {
   channelHandle[channel] = this; // used by interrupt
   rmt_register_tx_end_callback(interrupt, 0);
   rmt_set_tx_intr_en(channel, true);
-
+  #if ARDUINO_ESP32S3_DEV
+  // rmt_tx_start() is required for the S3
+  rmt_tx_start(channel,true);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH0: %x"), RMT_MEM_SIZE_CH0);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH1: %x"), RMT_MEM_SIZE_CH1);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH2: %x"), RMT_MEM_SIZE_CH2);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH3: %x"), RMT_MEM_SIZE_CH3);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH4: %x"), RMT_MEM_SIZE_CH4);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH5: %x"), RMT_MEM_SIZE_CH5);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH6: %x"), RMT_MEM_SIZE_CH6);
+  DIAG(F("This is the Config Reg: RMT_MEM_SIZE_CH7: %x"), RMT_MEM_SIZE_CH7);
+  #endif
   DIAG(F("Channel %d DCC signal for %s start"), config.channel, isMain ? "MAIN" : "PROG");
 
   // send one bit to kickstart the signal, remaining data will come from the

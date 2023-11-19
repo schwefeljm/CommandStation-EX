@@ -21,7 +21,7 @@
 // On ESP32 we do not even use the functions but they are here for completeness sake
 // Please refer to DCCTimer.h for general comments about how this class works
 // This is to avoid repetition and duplication.
-
+#include <DIAG.h>
 #ifdef ARDUINO_ARCH_ESP8266
 
 #include "DCCTimer.h"
@@ -83,9 +83,17 @@ int DCCTimer::freeMemory() {
 #include <soc/sens_struct.h>
 #undef ADC_INPUT_MAX_VALUE
 #define ADC_INPUT_MAX_VALUE 4095 // 12 bit ADC
-#define pinToADC1Channel(X) (adc1_channel_t)(((X) > 35) ? (X)-36 : (X)-28)
 
 int IRAM_ATTR local_adc1_get_raw(int channel) {
+#if ARDUINO_ESP32S3_DEV
+#define pinToADC1Channel(X) (adc1_channel_t)(X-1)
+  uint16_t adc_value;
+  adc_value = adc1_get_raw((adc1_channel_t)(channel));
+  DIAG(F("ADC1_Value = %n"), adc_value)	;
+
+  return adc_value;
+#else
+#define pinToADC1Channel(X) (adc1_channel_t)(((X) > 35) ? (X)-36 : (X)-28)
   uint16_t adc_value;
   SENS.sar_meas_start1.sar1_en_pad = (1 << channel); // only one channel is selected
   while (SENS.sar_slave_addr1.meas_status != 0);
@@ -94,6 +102,7 @@ int IRAM_ATTR local_adc1_get_raw(int channel) {
   while (SENS.sar_meas_start1.meas1_done_sar == 0);
   adc_value = SENS.sar_meas_start1.meas1_data_sar;
   return adc_value;
+#endif
 }
 
 #include "DCCTimer.h"
